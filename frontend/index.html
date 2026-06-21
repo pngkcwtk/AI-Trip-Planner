@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Trip Planner</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQd/M6ByhD7gAiP1j3n1l+I06Qz5b9A="
+      crossorigin=""
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#0f172a",
+              ocean: "#2563eb",
+              skysoft: "#eff6ff",
+            },
+            boxShadow: {
+              soft: "0 18px 45px rgba(15, 23, 42, 0.10)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-slate-50 text-ink">
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+        <a href="/" class="flex min-w-0 items-center gap-3 font-bold">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-ocean text-white">AI</span>
+          <span class="truncate">AI Trip Planner</span>
+        </a>
+        <a href="#planner" class="rounded-lg bg-ocean px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500">
+          Plan Trip
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <section class="relative overflow-hidden bg-white">
+        <div class="mx-auto grid min-h-[78vh] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:px-8">
+          <div>
+            <p class="mb-4 inline-flex rounded-full bg-skysoft px-3 py-1 text-sm font-semibold text-blue-700">
+              OpenStreetMap + OpenRouteService + Gemini
+            </p>
+            <h1 class="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              Build a smarter full-day itinerary with real travel data.
+            </h1>
+            <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+              Choose your destination, date, budget, travelers, and interests. The planner uses AI to generate search strategy, finds real attractions, computes routes, and presents a map-ready itinerary.
+            </p>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a href="#planner" class="rounded-lg bg-ocean px-6 py-3 text-center font-semibold text-white shadow-soft transition hover:bg-blue-500">
+                Generate Itinerary
+              </a>
+              <a href="#results" class="rounded-lg border border-slate-300 bg-white px-6 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-100">
+                View Dashboard
+              </a>
+            </div>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-950 p-5 text-white shadow-soft">
+            <div class="mb-4 flex items-center justify-between">
+              <div>
+                <p class="text-sm text-sky-200">Live preview</p>
+                <h2 class="text-xl font-bold">Route Map</h2>
+              </div>
+              <span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-100">Interactive</span>
+            </div>
+            <div class="relative h-80 overflow-hidden rounded-lg bg-slate-900">
+              <div class="absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:32px_32px]"></div>
+              <svg class="absolute inset-0 h-full w-full" aria-hidden="true">
+                <path d="M70 220 C140 110 220 210 290 95 S430 85 520 210" fill="none" stroke="#60a5fa" stroke-width="4" stroke-dasharray="10 10"></path>
+              </svg>
+              <span class="absolute left-[14%] top-[64%] grid h-9 w-9 place-items-center rounded-full bg-white font-bold text-blue-600 shadow-lg">1</span>
+              <span class="absolute left-[43%] top-[28%] grid h-9 w-9 place-items-center rounded-full bg-white font-bold text-blue-600 shadow-lg">2</span>
+              <span class="absolute right-[16%] top-[61%] grid h-9 w-9 place-items-center rounded-full bg-white font-bold text-blue-600 shadow-lg">3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="planner" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div class="mb-8 max-w-3xl">
+          <p class="text-sm font-bold uppercase tracking-wide text-ocean">Trip Planning Form</p>
+          <h2 class="mt-2 text-3xl font-bold">Tell us how you travel</h2>
+          <p class="mt-3 text-slate-600">API keys stay on the Express backend. The browser only submits preferences.</p>
+        </div>
+
+        <form id="tripForm" class="grid gap-6 rounded-xl border border-slate-200 bg-white p-5 shadow-soft lg:grid-cols-2 lg:p-7">
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Destination province/city</span>
+            <input id="destination" list="provinceOptions" required value="ขอนแก่น" placeholder="เลือกจังหวัดหรือพิมพ์เมือง" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+            <datalist id="provinceOptions"></datalist>
+            <span class="text-xs text-slate-500">เลือกจากรายชื่อจังหวัดไทย หรือพิมพ์เมือง/พื้นที่เองได้</span>
+          </label>
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Travel date</span>
+            <input id="travelDate" required type="date" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+          </label>
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Start time</span>
+            <input id="startTime" required type="time" value="09:00" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+          </label>
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">End time</span>
+            <input id="endTime" required type="time" value="18:00" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+          </label>
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Budget</span>
+            <input id="budget" required type="number" min="0" value="3000" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+          </label>
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Number of travelers</span>
+            <input id="travelers" required type="number" min="1" value="2" class="h-12 rounded-lg border border-slate-300 px-4 outline-none ring-blue-500 transition focus:ring-2" />
+          </label>
+
+          <fieldset class="lg:col-span-2">
+            <legend class="mb-3 text-sm font-semibold">Interests</legend>
+            <div id="interests" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
+          </fieldset>
+
+          <div class="flex flex-col gap-3 lg:col-span-2 sm:flex-row sm:items-center">
+            <button id="submitButton" class="rounded-lg bg-ocean px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60" type="submit">
+              Generate full-day itinerary
+            </button>
+            <p id="formHint" class="text-sm text-slate-500">Requires Gemini and OpenRouteService API keys in <code>.env</code>. Khon Kaen has mock fallback data.</p>
+          </div>
+        </form>
+      </section>
+
+      <section id="results" class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <div id="loadingState" class="hidden rounded-xl border border-blue-100 bg-white p-6 shadow-soft">
+          <div class="mb-4 h-5 w-48 animate-pulse rounded bg-slate-200"></div>
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="h-28 animate-pulse rounded-lg bg-slate-100"></div>
+            <div class="h-28 animate-pulse rounded-lg bg-slate-100"></div>
+            <div class="h-28 animate-pulse rounded-lg bg-slate-100"></div>
+          </div>
+        </div>
+
+        <div id="errorState" class="hidden rounded-xl border border-red-200 bg-red-50 p-5 text-red-700"></div>
+
+        <div id="emptyState" class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <p class="text-lg font-semibold">Your itinerary dashboard will appear here.</p>
+          <p class="mt-2 text-slate-500">Submit the form to generate a route, timeline, and attraction cards.</p>
+        </div>
+
+        <div id="dashboard" class="hidden space-y-8">
+          <div class="grid gap-4 md:grid-cols-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Total stops</p>
+              <p id="totalStops" class="mt-1 text-2xl font-bold"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Total distance</p>
+              <p id="totalDistance" class="mt-1 text-2xl font-bold"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Travel time</p>
+              <p id="totalTravelTime" class="mt-1 text-2xl font-bold"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Available time</p>
+              <p id="availableTime" class="mt-1 text-2xl font-bold"></p>
+            </div>
+          </div>
+
+          <div class="grid gap-8 lg:grid-cols-[1fr_440px]">
+            <div>
+              <div class="mb-5">
+                <div id="sourceNotice" class="mb-3 hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800"></div>
+                <p id="strategy" class="rounded-xl bg-blue-50 p-4 text-sm leading-6 text-blue-800"></p>
+              </div>
+              <h2 class="mb-4 text-2xl font-bold">Timeline Itinerary</h2>
+              <div id="timeline" class="space-y-5"></div>
+            </div>
+            <aside class="lg:sticky lg:top-24 lg:self-start">
+              <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+                <div class="border-b border-slate-200 p-4">
+                  <h2 class="font-bold">Interactive OpenStreetMap</h2>
+                  <p class="text-sm text-slate-500">Markers and route visualization</p>
+                </div>
+                <div id="map" class="h-[420px] bg-slate-100"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
