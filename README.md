@@ -76,7 +76,7 @@ Copy-Item .env.example .env
 PORT=4000
 GEMINI_API_KEY=your_gemini_api_key
 ORS_API_KEY=your_openrouteservice_api_key
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 เริ่ม server:
